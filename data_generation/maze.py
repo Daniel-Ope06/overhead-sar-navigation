@@ -5,6 +5,11 @@ import math
 
 
 def create_maze(grid_obj):
+    """
+    Applies a Depth First Search algorithm to carve a random maze.
+    Closes all edges of the grid object and incrementally
+    opens a path ensuring all cells remain accessible.
+    """
     if grid_obj.type != 'MESH':  # type: ignore
         raise Exception("Must be a mesh object")
 
@@ -75,6 +80,10 @@ def create_maze(grid_obj):
 
 
 def position_actors(grid_obj, ugv_obj, human_obj):
+    """
+    Randomly places the UGV and Human at two distinct cells on the grid,
+    sets their Z height, and randomizes their Z-axis rotation
+    """
     mesh = grid_obj.data
 
     # Randomly picks 2 distinct faces to prevent overlap
