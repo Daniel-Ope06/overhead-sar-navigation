@@ -2,6 +2,30 @@ import bpy
 import bmesh
 import random
 import math
+import os
+
+# --- Configuration ---
+NUM_IMAGES = 1000
+IMG_RESOLUTION = 640
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+OUTPUT_DIR = os.path.join(SCRIPT_DIR, "synthetic_dataset")
+IMAGE_DIR = os.path.join(OUTPUT_DIR, "images")
+LABEL_DIR = os.path.join(OUTPUT_DIR, "labels")
+
+# YOLO Class IDs
+CLASS_UGV = 0
+CLASS_HUMAN = 1
+
+
+def setup_directories():
+    """
+    Creates the required output directories if they do not exist.
+    Separates images and labels to adhere to standard YOLO training structures.
+    """
+    for directory in [IMAGE_DIR, LABEL_DIR]:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
 
 def create_maze(grid_obj):
