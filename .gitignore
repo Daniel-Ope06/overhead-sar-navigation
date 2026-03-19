@@ -1,0 +1,5 @@
+.vscode
+
+*.blend1
+
+.mypy_cache
