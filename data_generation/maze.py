@@ -8,8 +8,12 @@ import os
 # --- Configuration ---
 NUM_IMAGES = 5
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-OUTPUT_DIR = os.path.join(SCRIPT_DIR, "synthetic_dataset")
+# Get the directory of the currently open .blend file
+if not bpy.data.filepath:
+    raise Exception("ERROR: This script must run in a .blend file")
+
+BLEND_DIR = os.path.dirname(bpy.data.filepath)
+OUTPUT_DIR = os.path.join(BLEND_DIR, "synthetic_dataset")
 IMAGE_DIR = os.path.join(OUTPUT_DIR, "images")
 LABEL_DIR = os.path.join(OUTPUT_DIR, "labels")
 
