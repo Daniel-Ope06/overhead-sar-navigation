@@ -1,6 +1,7 @@
 import bpy
 import bmesh
 import random
+import math
 
 
 def create_maze(grid_obj):
@@ -64,15 +65,47 @@ def create_maze(grid_obj):
             visited.append(chosen_neighbor)
             stack.append(chosen_neighbor)
 
-            # open all edges between current cell and chosen neighbor
+            # Open all edges between current cell and chosen neighbor
             for edge in current_cell.edges:
                 if edge in chosen_neighbor.edges:
                     setattr(closed.data[edge.index], 'value', False)
 
-    # update the mesh to show the maze
+    # Update the mesh to show the maze
     mesh.update()  # type: ignore
+
+
+def position_actors(grid_obj, ugv_obj, human_obj):
+    mesh = grid_obj.data
+
+    # Randomly picks 2 distinct faces to prevent overlap
+    chosen_faces = random.sample(list(mesh.polygons), 2)
+    ugv_face = chosen_faces[0]
+    human_face = chosen_faces[1]
+
+    # Calculate global coordinates
+    ugv_global_loc = grid_obj.matrix_world @ ugv_face.center
+    human_global_loc = grid_obj.matrix_world @ human_face.center
+
+    # Apply the locations
+    ugv_obj.location = (ugv_global_loc.x, ugv_global_loc.y, 0.33)
+    human_obj.location = (human_global_loc.x, human_global_loc.y, -0.55)
+
+    # Apply random rotation
+    # Human: Continuously random (0 to 360 degrees)
+    human_obj.rotation_euler.z = random.uniform(0, 2 * math.pi)
+
+    # UGV: Strictly N, E, S, W (0, 90, 180, 270 degrees)
+    cardinal_angles = [0.0, math.pi / 2, math.pi, 3 * math.pi / 2]
+    ugv_obj.rotation_euler.z = random.choice(cardinal_angles)
+
+    # Update the scene
+    bpy.context.view_layer.update()  # type: ignore
 
 
 # Call the function
 assert (bpy.context.scene is not None)
-create_maze(bpy.context.scene.objects['Grid'])
+grid = bpy.context.scene.objects['Grid']
+ugv = bpy.context.scene.objects['UGV']
+human = bpy.context.scene.objects['Human']
+create_maze(grid)
+position_actors(grid, ugv, human)
