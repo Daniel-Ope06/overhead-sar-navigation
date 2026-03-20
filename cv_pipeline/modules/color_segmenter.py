@@ -17,7 +17,7 @@ class ColorSegmenter:
 
         # Default RGB values for purely white walls.
         # Format: [Red, Green, Blue] (0-255 scale)
-        self.lower_wall_rgb = np.array([200, 200, 200])
+        self.lower_wall_rgb = np.array([226, 239, 239])
         self.upper_wall_rgb = np.array([255, 255, 255])
 
     def tune_thresholds(self, image_path):
@@ -87,7 +87,7 @@ class ColorSegmenter:
     def generate_matrix(self, image_path):
         """
         Converts the maze image into a high-res binary pathfinding grid.
-        Returns the matrix (1=Path, 0=Wall) and the original image.
+        Returns the matrix (1=Path, 0=Wall).
         """
         img = cv2.imread(image_path)
         if img is None:
@@ -107,13 +107,7 @@ class ColorSegmenter:
                 x_start = int(x * self.cell_size)
                 x_end = int((x + 1) * self.cell_size)
 
-                # Extract the cell and shrink the view slightly
-                # by a 2-pixel margin.
-                # This ignores anti-aliasing blur
-                # right on the very edges of the walls.
-                margin = 2
-                chunk = wall_mask[
-                    y_start+margin:y_end-margin, x_start+margin:x_end-margin]
+                chunk = wall_mask[y_start:y_end, x_start:x_end]
 
                 # If there are any white (wall) pixels inside this cell,
                 # set it as a wall (0)
@@ -122,4 +116,4 @@ class ColorSegmenter:
                 else:
                     binary_grid[y][x] = 1
 
-        return binary_grid, img
+        return binary_grid
