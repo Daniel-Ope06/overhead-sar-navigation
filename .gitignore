@@ -1,8 +1,16 @@
+# Ignore generated datasets and masks
+data_generation/synthetic_dataset/images/*
+data_generation/synthetic_dataset/labels/*
+data_generation/synthetic_dataset/masks/*
+
+# Ignore solved output renders
+cv_pipeline/outputs/*
+
+# Keep the empty folders in the repo
+!*/.gitkeep
+
+# Others
 .vscode
-
 *.blend1
-
 .mypy_cache
 __pycache__
-
-data_generation/synthetic_dataset/
