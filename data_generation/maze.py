@@ -133,7 +133,8 @@ def create_maze(grid_obj):
                     setattr(closed.data[edge.index], 'value', False)
 
     # Update the mesh to show the maze
-    mesh.update()  # type: ignore
+    mesh.update()
+    bm.free()
 
 
 def position_actors(grid_obj, ugv_obj, human_obj):
@@ -217,6 +218,10 @@ def generate_dataset():
     end_index = start_index + NUM_IMAGES
 
     for i in range(start_index, end_index):
+        # Sync Blender's timeline
+        # to order the mask file naming
+        scene.frame_set(i)
+
         # Randomize Environment
         create_maze(grid)
         position_actors(grid, ugv, human)
