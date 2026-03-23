@@ -5,8 +5,8 @@ import shutil
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATASET_DIR = os.path.join(SCRIPT_DIR, "synthetic_dataset")
-TRAIN_RATIO = 0.5
-VAL_RATIO = 0.25
+TRAIN_RATIO = 0.8
+VAL_RATIO = 0.1
 # Test ratio is automatically the remainder
 
 
@@ -38,6 +38,7 @@ def split_data():
 
     # Reset the folders & files
     auto_flatten(dirs)
+    # return  # Keep to only flatten
 
     # Create the Train/Val/Test subdirectories
     for dir_path in dirs.values():
