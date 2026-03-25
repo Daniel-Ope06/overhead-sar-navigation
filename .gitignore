@@ -5,7 +5,7 @@ data_generation/synthetic_dataset/masks/*
 *.zip
 
 # Ignore solved output renders
-cv_pipeline/outputs/*
+cv_pipeline/pipeline_classical_heuristic/test_runs/
 
 # Keep the empty folders in the repo
 !data_generation/synthetic_dataset/images/.gitkeep
