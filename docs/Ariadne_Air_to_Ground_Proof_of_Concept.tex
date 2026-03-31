@@ -10,6 +10,7 @@
 \usepackage{geometry}
 \geometry{top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm} % Standard academic margins
 \usepackage{graphicx}
+\usepackage{subcaption}
 \usepackage{titlesec}
 \usepackage[hidelinks]{hyperref}
 \usepackage{xcolor}
@@ -40,7 +41,6 @@
     tabsize=2
 }
 \lstset{style=mystyle}
-\renewcommand{\lstlistingname}{Code Snippet}
 
 % --- Document Info ---
 \title{
@@ -101,7 +101,73 @@ Beyond ground-level localisation, extensive research has examined how Unmanned A
 
 To achieve optical terrain mapping, deep learning-based semantic segmentation has become the standard. Recent advancements in aerial road extraction utilise Convolutional Neural Networks (CNNs), particularly the \textbf{U-Net architecture}, to carry out binary semantic segmentation on remote sensing imagery \cite{Doghmane_Boukari_2024}. Research by Doghmane and Boukari demonstrates that enhancing the U-Net model with \textbf{Batch Group Normalisation} (BGN) significantly improves its ability to classify individual pixels into distinct object categories, such as road versus non-road areas. By dividing high-resolution aerial images into manageable patches and applying a sigmoid activation function to output a continuous pixel value, their BGN-UNet model achieved an exceptional Mean Intersection over Union (IoU) of 98.4\%. \textbf{Ariadne} takes direct inspiration from this pixel-wise classification approach. Just as BGN-UNet isolates navigable infrastructure from complex backgrounds, Ariadne utilises deep learning segmentation on overhead UAV imagery to divide simulated tactical environments (represented via procedural mazes) into strictly traversable paths and non-traversable boundaries. However, while current literature primarily treats the segmented image as the final output, Ariadne expands on this idea by utilising the high-IoU segmentation mask as a foundational grid for \textbf{A* pathfinding}. This approach translates the visual classification into a mathematical route for a ground agent.
 
+\vspace{0.5cm}
 
+\section{Design and Methodology}
+
+The system architecture of Ariadne consists of four sequential phases: synthetic data generation, target extraction, environmental segmentation, and tactical pathfinding. This pipeline was implemented using a combination of Blender 5.1 for procedural environment modelling, and PyTorch (U-Net) and Ultralytics (YOLO) for computer vision processing.
+
+\vspace{0.5cm}
+
+\subsection{Synthetic Data Generation}
+
+\quad The basis of this proof-of-concept is to create a highly controlled and noiseless environment for the independent evaluation of the algorithmic logic in the computer vision and pathfinding modules. Before deploying optical routing architectures into unstructured, highly occluded real-world topographies (such as forest canopies or disaster zones), the core logic must be validated.
+
+\vspace{0.5cm}
+
+To achieve this, a custom dataset of procedural 2D mazes was generated using the Blender Python API (\texttt{bpy}). Utilising a 3D rendering engine (Figure~\ref{fig:blender_viewport}) for top-down 2D maze generation enables automated extraction of mathematically perfect ground-truth labels.
+
+\vspace{0.5cm}
+
+\hspace{-1.5em}For each procedural iteration, the rendering pipeline was configured to automatically export three distinct assets:
+
+\begin{enumerate}
+    \item \textbf{RGB Overhead Image:} A colour rendering (Figure~\ref{fig:rgb-1}) simulating the raw optical feed captured by the UAV's downward-facing camera.
+
+    \item \textbf{Binary Segmentation Mask:} A grayscale image (Figure~\ref{fig:bsm-1}) mapping the precise pixel coordinates of paths (white) against walls (black). This serves as the ground truth for the U-Net architecture.
+
+    \item \textbf{Bounding Box Annotations:} A text file (Listing~\ref{lst:bbox_output}) containing the normalised spatial coordinates and class identifiers for the starting agent (0: UGV) and the target objective (1: Human). These labels adhere to the YOLO formatting standard, providing the ground truth required for the target extraction phase.
+\end{enumerate}
+
+\newpage
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=1\linewidth]{images/blender_viewport_setup.png}
+    \caption{Procedural maze generation environment configured within Blender 5.1.}
+    \label{fig:blender_viewport}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \begin{subfigure}[t]{0.49\linewidth}
+    \centering
+        \includegraphics[width=1\linewidth]{images/maze_env_0000_img.png}
+        \caption{RGB Overhead Image}
+        \label{fig:rgb-1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.49\linewidth}
+    \centering
+        \includegraphics[width=1\linewidth]{images/maze_env_0000_mask.png}
+        \caption{Binary Segmentation Mask}
+        \label{fig:bsm-1}
+    \end{subfigure}
+    \caption{Procedurally generated 2D maze renders}
+    \label{fig:rgb-bsm-1}
+\end{figure}
+
+\vspace{0.5cm}
+
+\noindent\begin{minipage}{\textwidth}
+    \begin{lstlisting}[language=Python, caption=Normalised bounding box coordinate output, label=lst:bbox_output]
+    0 0.844262 0.057377 0.039220 0.034991
+    1 0.457275 0.653128 0.068142 0.071114
+    \end{lstlisting}
+\end{minipage}
+
+
+\newpage
 \bibliographystyle{ieeetr}
 \bibliography{references}
     
