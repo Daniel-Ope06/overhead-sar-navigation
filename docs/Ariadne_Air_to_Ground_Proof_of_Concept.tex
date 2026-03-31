@@ -1,0 +1,60 @@
+\documentclass[12pt, a4paper]{article}
+
+% --- Font and Language Setup (Requires XeLaTeX compiler) ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{carlito}
+\renewcommand{\familydefault}{\sfdefault}
+
+% --- Packages ---
+\usepackage{geometry}
+\geometry{top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm} % Standard academic margins
+\usepackage{graphicx}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+
+% --- Python Code Formatting Setup ---
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+\renewcommand{\lstlistingname}{Code Snippet}
+
+% --- Document Info ---
+\title{
+    \Large \textbf{ITNPAI2: AI for Computer Vision} \\
+    \vspace{0.5cm}
+    \LARGE \textbf{Ariadne} \\
+    \vspace{0.25cm}
+    \large A Synthetic Proof of Concept for Air-to-Ground Optical Navigation
+}
+\author{Student ID: 3539054}
+\date{April 1, 2026}
+
+\begin{document}
+
+\maketitle
+
+\end{document}
