@@ -115,7 +115,7 @@ The system architecture of Ariadne consists of four sequential phases: synthetic
 
 \vspace{0.5cm}
 
-To achieve this, a custom dataset of procedural 2D mazes was generated using the Blender Python API (\texttt{bpy}). Utilising a 3D rendering engine (Figure~\ref{fig:blender_viewport}) for top-down 2D maze generation enables automated extraction of mathematically perfect ground-truth labels.
+To achieve this, a custom dataset of $1000$ procedural 2D mazes was generated using the Blender Python API (\texttt{bpy}). The dataset was partitioned into $800$ mazes for training, $100$ for validation, and $100$ for testing. Utilising a 3D rendering engine (Figure~\ref{fig:blender_viewport}) for top-down 2D maze generation enables automated extraction of mathematically perfect ground-truth labels.
 
 \vspace{0.5cm}
 
@@ -277,7 +277,7 @@ This establishes a precise $1:9$ spatial mapping, where each cell of the origina
 
 \vspace{0.5cm}
 
-\subsubsection{Approach A: Classical Color Heuristics}
+\subsubsection{Approach A: Classical Colour Heuristics}
 
 \quad The first approach uses classical, deterministic computer vision techniques using the OpenCV library. This module (\texttt{color\_segmenter.py}) applies predefined colour thresholding arrays to accurately isolate traversable paths based solely on raw pixel values.
 
@@ -421,3 +421,136 @@ def calc_manhattan_dist(self, current_node, target_node):
 \subsubsection{Route Output}
 
 \quad The algorithm uses a priority queue from Python's \texttt{heapq} module to find the node with the lowest $f(n)$ score. When it successfully reaches the target node, it traces back the path of evaluated nodes to the starting node using a recorded history. This path is then reversed to create the best route as a list of $(x, y)$ grid coordinates. In a live deployment, this list acts as the waypoint list sent to the UGV’s flight controller, completing the Air-to-Ground optical navigation loop.
+
+\section{Results and Discussion}
+
+\quad The evaluation of the \textit{Ariadne} pipeline looked at how well the system translated raw optical data into useful navigational waypoints. The tests took place in created, synthetic 2D mazes. Because the system could achieve close to 100\% accuracy in a noise-free environment, focusing only on numbers does not offer much academic value. Instead, this section compares the system to the best current methods. It then evaluates how well the system meets its main Proof of Concept requirements.
+
+\vspace{0.5cm}
+
+\subsection{Qualitative Literature Comparison}
+
+\quad To evaluate the academic and tactical value of Ariadne, the architecture was compared against the three primary methodologies identified in the literature review: Magnetic Field Map-Based Localization \cite{11219502}, SLAM/POMDP Aerial Exploration \cite{8741612}, and BGN-UNet Aerial Road Segmentation \cite{Doghmane_Boukari_2024}. The goal of this comparison, shown in Table~\ref{tab:comparison}, is to identify the strengths and weaknesses of each approach. This will help explain how Ariadne connects aerial perception with ground-level movement.
+
+\begin{table}[t]
+    \centering
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{|p{0.20\textwidth}|p{0.15\textwidth}|p{0.32\textwidth}|p{0.33\textwidth}|}
+        \hline
+        \textbf{Methodology} & \textbf{Operational Domain} & \textbf{Key Strengths} & \textbf{Inherent Limitations} \\ \hline
+        
+        \textbf{Magnetic Field \newline Localization} \cite{11219502} & Ground-Level (UGV) & Highly resilient in visually degraded environments (e.g., thick smoke, darkness). Immune to GNSS jamming. & \textbf{Reactive Routing:} Requires "ground-level discovery." The UGV must physically traverse and encounter obstacles to map the environment. \\ \hline
+        
+        \textbf{SLAM \& POMDP Framework} \cite{8741612} & Aerial-Level (UAV) & Excellent handling of sequential decision-making under uncertainty. Maximizes safe environmental exploration. & \textbf{Isolated Architecture:} Designed solely for single-agent self-preservation. Does not relay generated occupancy maps to separate ground assets. \\ \hline
+        
+        \textbf{BGN-UNet \newline Segmentation} \cite{Doghmane_Boukari_2024} & Aerial-Level (UAV) & Exceptional pixel-wise classification of complex environments, achieving near-perfect (98.4\%) geometric IoU. & \textbf{Static Output:} Treats the semantic mask as the final deliverable. Does not mathematically translate the classification into kinematic routes. \\ \hline
+        
+        \textbf{Ariadne \newline (Proposed \newline System)} & \textbf{Cross-Domain} (UAV-to-UGV) & \textbf{Deterministic Routing:} Provides the UGV with an optimal path \textit{before} physical movement. Bridges computer vision and classical pathfinding (A*). & \textbf{PoC Constraints:} Currently relies on synthetic environments. Requires clear overhead optical visibility, lacking the sensor redundancy of magnetic or LiDAR systems. \\ \hline
+    \end{tabular}
+    \caption{Qualitative Comparison of Autonomous Navigation Methodologies}
+    \label{tab:comparison}
+\end{table}
+
+\vspace{0.5cm}
+
+Current research often separates aerial and ground operations, as shown in Table~\ref{tab:comparison}. \textit{Ariadne} solves this problem. It uses the UAV as an overhead optical \textit{"oracle"}, avoiding the risks associated with ground-level detection (seen in \cite{11219502}). By sending the U-Net segmentation mask into an A* search grid, Ariadne overcomes the limitations of static image outputs in \cite{Doghmane_Boukari_2024}. This process allows it to turn pixels into a usable mathematical route.
+
+\vspace{0.5cm}
+
+\subsection{Visual Pathfinding Results}
+
+\quad To validate the system's core logic, the pipeline was tested against $100$ procedurally generated environments of varying spatial complexity. The results below show that both the classical colour heuristic and the neural semantic (U-Net) routing methods completed the tasks successfully.
+
+\vspace{0.5cm}
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[t]{0.49\linewidth}
+    \centering
+        \includegraphics[width=1\linewidth]{images/colour/solved_maze_env_0335.png}
+        \caption{Colour Heuristic Solution}
+        \label{fig:col-1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.49\linewidth}
+    \centering
+        \includegraphics[width=1\linewidth]{images/unet/solved_maze_env_0335.png}
+        \caption{Neural Semantic Solution}
+        \label{fig:unet-1}
+    \end{subfigure}
+    \caption{Visual comparison of pathfinding solutions in a simpler maze. Both the colour heuristic (a) and the neural semantic approach (b) compute a direct, low-complexity route to the target.}
+    \label{fig:col-unet-1}
+\end{figure}
+
+\newpage
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.49\linewidth}
+    \centering
+        \includegraphics[width=1\linewidth]{images/colour/solved_maze_env_0134.png}
+        \caption{Colour Heuristic Solution}
+        \label{fig:col-2}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.49\linewidth}
+    \centering
+        \includegraphics[width=1\linewidth]{images/unet/solved_maze_env_0134.png}
+        \caption{Neural Semantic Solution}
+        \label{fig:unet-2}
+    \end{subfigure}
+    \caption{Routing performance in a more complex maze. Both methods effectively find a complex route with multiple turns. This shows that the system can safely navigate through high-density obstacles.}
+    \label{fig:col-unet-2}
+\end{figure}
+
+\vspace{0.5cm}
+
+\subsection{Limitations and Scope}
+
+\quad It is critical to contextualise these results within the scope of a synthetic Proof of Concept (PoC). The primary objective here was to prove the underlying mathematical logic of an Air-to-Ground optical pipeline, not to immediately deploy a production-ready model into a physically chaotic environment.
+
+\vspace{0.5cm}
+
+The procedural 2D mazes served as a controlled and noiseless sandbox. However, the current system has two main limitations. First, it assumes that the UAV can always see the UGV from above without any obstructions. In a real forest, thick trees can completely block the UAV's view. Second, the system has not been tested with random lighting, weather changes, or various natural textures found in the real world. Still, since the system is very modular, future updates can adjust to real-world conditions by retraining the U-Net and YOLO models using generated data similar to such scenarios.
+
+\vspace{0.5cm}
+
+\section{Discussion of Ethics, Application, and Robustness}
+
+\subsection{Real-World Application}
+
+\quad The Ariadne architecture is built to address a key challenge in modern robotics: navigating without GPS. It is mainly meant for Search and Rescue (SAR) missions in environments that are hard to navigate, such as disaster areas with collapsed buildings or floods. In these situations, ground sensors like LiDAR can struggle due to smoke or debris, and satellite navigation cannot be used. By using a high-altitude UAV as a visual guide, emergency responders can safely direct UGVs to reach victims without risking the safety of human operators.
+
+\vspace{0.5cm}
+
+\subsection{Robustness and Consequences of Error}
+
+\quad \textit{Ariadne} is an optical routing system that relies on the quality of the U-Net segmentation mask. If this system is used in real-life situations, any errors in computer vision can lead to serious physical failures.
+
+\vspace{0.5cm}
+
+\hspace{-1.5em}There are two primary failure modes:
+
+\begin{enumerate}
+  \item \textbf{False Positives (Hallucinating a Path):} If the segmentation model falsely classifies an impassable obstacle (such as a ditch or a fallen tree) as traversable terrain, the A* algorithm will confidently route the UGV directly into it, resulting in a mechanical collision, vehicle loss, or mission failure.
+  
+  \item \textbf{False Negatives (Hallucinating a Wall):} If the model is confused by visual noise (such as shadows) and classifies a clear path as an obstacle, the A* matrix may falsely conclude that the target is completely blocked, leaving the UGV stranded and unable to reach a critical objective.
+\end{enumerate}
+
+\hspace{-1.5em}To mitigate these consequences, a production-level deployment of \textit{Ariadne} cannot operate in a vacuum. It must act as a \textit{"Global Planner,"} generating the overarching route, while the UGV utilises localised edge sensors (such as bump sensors or short-range LiDAR) as a "Local Planner" to reactively avoid unmapped, immediate physical threats.
+
+\vspace{0.5cm}
+
+\subsection{Ethics and the Dual-Use Dilemma}
+
+\quad This project was created for humanitarian Search and Rescue efforts, but any technology that allows for autonomous navigation in areas without GPS can also be used in other ways. The same systems that guide a medical supply drone through a chaotic disaster zone can be used by military or other groups to direct dangerous weapons through an electronic warfare environment without needing a human to oversee the process.
+
+\vspace{0.5cm}
+
+This raises serious ethical questions about who is responsible. If an autonomous ground vehicle using an Ariadne-style optical system mistakes a target or goes through a protected civilian area, it becomes unclear who is accountable. Taking the human operator out of the navigation process means that strict rules must follow international humanitarian law. Future developers need to create reliable safety measures to make sure that the system cannot be used as a weapon without human permission.
+
+\newpage
+\bibliographystyle{ieeetr}
+\bibliography{references}
+    
+\end{document}
